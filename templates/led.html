@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+   <head>
+      <title>{{ title }}</title>
+      <link rel="stylesheet" href='../static/style.css'/>
+   </head>
+   <body>
+	  <h1>{{ title }}</h1>
+      <h2>Button pressed:  {{ button }}</h2>
+      <h2>Status and Commands</h2>
+      <h3 id='red'>RED: <p >{{led_red_status}}</p>
+			<a class='on'>TURN ON</a>
+			<a class='off'>TURN OFF</a>
+      </h3>
+
+      <h3 id='yellow'>YELLOW: <p  >{{led_yellow_status}}</p>
+			<a class='on'>TURN ON</a>
+			<a class='off'>TURN OFF</a>
+      </h3>
+
+      <h3 id='green'>GREEN: <p  >{{led_green_status}}</p>
+			<a class='on' >TURN ON</a>
+			<a class='off'>TURN OFF</a>
+      </h3>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+      <script type="text/javascript">
+        if($('#red p').html() === '0'){
+	   console.log('red off hide');
+          $('#red .off').hide()
+        }else{
+	   console.log('red on hide');
+          $('#red .on').hide()
+        }
+
+        if($('#yellow p').html() === '0'){
+          $('#yellow .off').hide();
+	  console.log('yellow off hide');
+        }else{
+          $('#yellow .on').hide();
+	  console.log('yellow on hide');
+        }
+
+        if($('#green p').html() === '0'){
+          $('#green .off').hide()
+	  console.log('green off hide');
+        }else{
+          $('#green .on').hide();
+	  console.log('green on hide');
+        }
+        var socket = io.connect('http://192.168.0.108:5050/btn');
+        var socket_led = io.connect('http://192.168.0.108:5050/led');
+
+        socket_led.on( 'connect', function() {
+          console.log('conected led');
+         } )
+
+        socket.on('btn_status', function(msg){
+         console.log(msg)
+        })
+        $('.on').click(function (){
+          id = $(this).parent()[0].id;
+	  console.log(id + 'on');
+          socket_led.emit('led_event',{
+            'led' : id,
+            'action' : 'on'
+          })
+          $('#'+id+' .on').hide();
+          $('#'+id+' .off').show();
+	  $('#'+id+' p').html('1');
+        })
+        $('.off').click(function (){
+          id = $(this).parent()[0].id;
+	  console.log(id + 'off');
+          socket_led.emit('led_event',{
+            'led' : id,
+            'action' : 'off'
+          })
+          $('#'+id+' .on').show();
+          $('#'+id+' .off').hide();
+	  $('#'+id+' p').html('0');
+        })
+
+    </script>
+
+   </body>
+</html>

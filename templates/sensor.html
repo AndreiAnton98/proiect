@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Flask_Chat_App</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.2.1/Chart.bundle.js"></script>
+    <style>
+        #tempChart {
+            width: 600px !important;
+            height: 300px !important;
+        }
+    </style>
+</head>
+
+<body>
+<div>
+  <canvas id="tempChart"></canvas>
+</div>
+    
+
+    <script type="text/javascript">
+        var ctx = document.getElementById('tempChart').getContext('2d');
+        var tempData = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                            display: true,
+                            ticks: {
+                                beginAtZero: false,
+                                min: 15,
+                          
+                                stepValue: 0.5,
+                                max: 25
+                            }
+                        }]
+                }
+            }
+        }
+        var myChart = new Chart(ctx, tempData);
+
+        var socket = io.connect('http://192.168.0.114:5050/dht');
+
+        socket.on( 'connect', function() {
+          console.log("concted!!!!!!!!!!!!!!!!!!!!!!!!")       
+        } )
+
+        socket.on('newnumber', function (msg) {
+            console.log(msg);
+            var date = new Date(parseInt(msg.datetime));
+            console.log(date);
+
+            var newTempDataValue = tempData.data.datasets[0].data;
+            if(newTempDataValue.length >=  10){
+              newTempDataValue.shift();
+          }
+            newTempDataValue.push(msg.temperature);
+            tempData.data.datasets[0].data = newTempDataValue;
+
+            var newTempDate = tempData.data.labels;
+            if(newTempDate.length >=  10){
+              newTempDate.shift();
+          }
+            newTempDate.push(date.getHours() + ':' + date.getMinutes()+'.'+ date.getMilliseconds());
+            tempData.data.labels = newTempDate;
+            myChart.update();
+        })
+
+    </script>
+
+</body>
+
+</html>
